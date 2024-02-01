@@ -77,6 +77,16 @@ static struct regulator *p_3v2_vreg = NULL;
 static int disable_regulator_3V2(struct regulator *vreg);
 static int enable_regulator_3V2(struct device *dev, struct regulator **pp_vreg);
 
+#define MI_FP_3V3
+static struct regulator *p_3V3_vreg = NULL;
+static int disable_regulator_3V3(struct regulator *vreg);
+static int enable_regulator_3V3(struct device *dev, struct regulator **pp_vreg);
+
+#define MI_FP_1V8
+static struct regulator *p_1V8_vreg = NULL;
+static int disable_regulator_1V8(struct regulator *vreg);
+static int enable_regulator_1V8(struct device *dev, struct regulator **pp_vreg);
+
 static int disable_regulator_3V2(struct regulator *vreg)
 {
 	devm_regulator_put(vreg);
@@ -107,6 +117,91 @@ static int enable_regulator_3V2(struct device *dev, struct regulator **pp_vreg)
 #endif
 
 	rc = regulator_set_load(vreg, 200000);
+
+	if (rc) {
+		return rc;
+	}
+
+	rc = regulator_enable(vreg);
+
+	if (rc) {
+		return rc;
+	}
+
+	*pp_vreg = vreg;
+	return rc;
+}
+
+static int disable_regulator_3V3(struct regulator *vreg)
+{
+	devm_regulator_put(vreg);
+	vreg = NULL;
+	return 0;
+}
+
+static int enable_regulator_3V3(struct device *dev, struct regulator **pp_vreg)
+{
+	int rc = 0;
+	struct regulator *vreg;
+	// vreg = devm_regulator_get(dev, "pm8350c_l11");
+	vreg = devm_regulator_get(dev, "l3c_vdd");
+	if (IS_ERR(vreg)) {
+		dev_err(dev, "fp %s: no of vreg found\n", __func__);
+		return PTR_ERR(vreg);
+	} else {
+		dev_err(dev, "fp %s: of vreg successful found\n", __func__);
+	}
+
+/*Skip voltage set as it has been set in dts*/
+#if 0
+	rc = regulator_set_voltage(vreg, 3000000, 3000000);
+
+	if (rc) {
+		return rc;
+	}
+#endif
+	rc = regulator_set_load(vreg, 200000);
+	if (rc) {
+		return rc;
+	}
+	rc = regulator_enable(vreg);
+	if (rc) {
+		return rc;
+	}
+	*pp_vreg = vreg;
+	return rc;
+}
+
+static int disable_regulator_1V8(struct regulator *vreg)
+{
+	devm_regulator_put(vreg);
+	vreg = NULL;
+	return 0;
+}
+
+static int enable_regulator_1V8(struct device *dev, struct regulator **pp_vreg)
+{
+	int rc = 0;
+	struct regulator *vreg;
+	// vreg = devm_regulator_get(dev, "pm8350c_l11");
+	vreg = devm_regulator_get(dev, "l1c_vdd");
+	if (IS_ERR(vreg)) {
+		dev_err(dev, "fp %s: no of vreg found\n", __func__);
+		return PTR_ERR(vreg);
+	} else {
+		dev_err(dev, "fp %s: of vreg successful found\n", __func__);
+	}
+
+/*Skip voltage set as it has been set in dts*/
+#if 0
+	rc = regulator_set_voltage(vreg, 3000000, 3000000);
+
+	if (rc) {
+		return rc;
+	}
+#endif
+
+	rc = regulator_set_load(vreg, 100000); //200000->100000,daiding
 
 	if (rc) {
 		return rc;
@@ -979,7 +1074,17 @@ static int gf_probe(struct platform_device *pdev)
 	}
 	status = enable_regulator_3V2(&gf_dev->spi->dev, &p_3v2_vreg);
 	if (status) {
-		goto error_regulator;
+		goto error_regulator_3V2;
+	}
+
+	status = enable_regulator_3V3(&gf_dev->spi->dev, &p_3V3_vreg);
+	if (status) {
+		goto error_regulator_3V3;
+	}
+
+	status = enable_regulator_1V8(&gf_dev->spi->dev, &p_1V8_vreg);
+	if (status) {
+		goto error_regulator_1V8;
 	}
 
 #ifdef AP_CONTROL_CLK
@@ -1017,10 +1122,19 @@ gfspi_probe_clk_enable_failed:
 	gfspi_ioctl_clk_uninit(gf_dev);
 gfspi_probe_clk_init_failed:
 #endif
-error_regulator:
+error_regulator_3V2:
 	disable_regulator_3V2(p_3v2_vreg);
 
 	input_unregister_device(gf_dev->input);
+
+error_regulator_3V3:
+	disable_regulator_3V3(p_3V3_vreg);
+
+	input_unregister_device(gf_dev->input);
+
+error_regulator_1V8:
+	disable_regulator_1V8(p_1V8_vreg);
+
 error_input:
 
 	if (gf_dev->input != NULL) {
@@ -1053,6 +1167,8 @@ static int gf_remove(struct platform_device *pdev)
 	struct gf_dev *gf_dev = &gf;
 
 	disable_regulator_3V2(p_3v2_vreg);
+	disable_regulator_3V3(p_3V3_vreg);
+	disable_regulator_1V8(p_1V8_vreg);
 	/*wakeup_source_destroy(fp_wakelock);*/
 	wakeup_source_unregister(fp_wakelock);
 	fp_wakelock = NULL;
