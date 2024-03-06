@@ -300,6 +300,7 @@ int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
 	cmd.len = 6;
 	cmd.data[0] = type & 0xFF;
 	cmd.data[1] = (type >> 8) & 0xFF;
+
 /* N17 code for HQ-291091 by jiangyue at 2023/6/2 end */
 	if (cd->hw_ops->send_cmd(cd, &cmd))
 		ts_err("failed send gesture cmd");
@@ -1249,6 +1250,7 @@ static int brl_esd_check(struct goodix_ts_core *cd)
 #define COOR_DATA_CHECKSUM_SIZE		2
 
 #define GOODIX_TOUCH_EVENT			0x80
+#define GOODIX_POWERON_FOD_EVENT		0x88
 #define GOODIX_REQUEST_EVENT		0x40
 #define GOODIX_GESTURE_EVENT		0x20
 #define GOODIX_FP_EVENT				0x08
@@ -1257,6 +1259,7 @@ static int brl_esd_check(struct goodix_ts_core *cd)
 /* N17 code for HQ-296762 by jiangyue at 2023/6/2 start */
 #define GOODIX_LRAGETOUCH_EVENT		0x10
 /* N17 code for HQ-296762 by jiangyue at 2023/6/2 end */
+static u8 eve_type;
 
 static void goodix_parse_finger(struct goodix_touch_data *touch_data,
 				u8 *buf, int touch_num)
@@ -1266,6 +1269,13 @@ static void goodix_parse_finger(struct goodix_touch_data *touch_data,
 	int i;
 
 	coor_data = &buf[IRQ_EVENT_HEAD_LEN];
+
+	if (eve_type == 0x88) {
+		touch_data->overlay = coor_data[touch_num *8 + 2];
+			if (coor_data[1] != 0) {
+			touch_data->fod_id = (coor_data[0] >> 4) & 0x0F;
+		}
+	}
 	for (i = 0; i < touch_num; i++) {
 		id = (coor_data[0] >> 4) & 0x0F;
 		if (id >= GOODIX_MAX_TOUCH) {
@@ -1462,6 +1472,12 @@ static int brl_event_handler(struct goodix_ts_core *cd,
 /* N17 code for HQ-296762 by jiangyue at 2023/6/2 start */
 	large_touch_status = pre_buf[2];
 	event_status = pre_buf[0];
+
+	if (event_status & GOODIX_POWERON_FOD_EVENT){
+		cd->eventsdata = event_status;
+		eve_type = event_status;
+	}
+
 	if (event_status & GOODIX_TOUCH_EVENT)
 		goodix_touch_handler(cd, ts_event,
 					    pre_buf, pre_read_len);
