@@ -3329,6 +3329,14 @@ static int __init goodix_ts_core_init(void)
 	ts_info("gpio_a = %d, gpio_b:%d", gpio_a, gpio_b);
 
 	ts_info("Core layer init:%s", GOODIX_DRIVER_VERSION);
+
+	/* add for gpio check on driver init */
+	if (!gpio_a && !gpio_b) {
+		ts_info("TP is goodix");
+	} else {
+		ts_info("TP is st 61y");
+		return 0;
+	}
 #ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_SPI
 	ret = goodix_spi_bus_init();
 #else
