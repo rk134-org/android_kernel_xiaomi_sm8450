@@ -1755,7 +1755,7 @@ help:
 	@echo  '		      kselftest to existing .config.'
 	@echo  ''
 	@$(if $(dtstree), \
-		echo 'Devicetree:'; \
+		echo ']Devicetree:'; \
 		echo '* dtbs             - Build device tree blobs for enabled boards'; \
 		echo '  dtbs_install     - Install dtbs to $(INSTALL_DTBS_PATH)'; \
 		echo '  dt_binding_check - Validate device tree binding documents'; \
@@ -1990,7 +1990,9 @@ $(clean-dirs):
 
 clean: $(clean-dirs)
 	$(call cmd,rmfiles)
-	@find $(if $(KBUILD_EXTMOD), $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
+	@find $(if $(KBUILD_EXTMOD), $(KBUILD_EXTMOD), .) \
+		$(if $(filter-out arch/$(SRCARCH)/boot/dts, $(dtstree)), $(dtstree)) \
+		$(RCS_FIND_IGNORE) \
 		\( -name '*.[aios]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '*.ko.*' \
 		-o -name '*.dtb' -o -name '*.dtb.S' -o -name '*.dt.yaml' \
