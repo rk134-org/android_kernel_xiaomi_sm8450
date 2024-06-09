@@ -164,3 +164,7 @@ arch/arm/boot/dts/vendor
 
 # Documentation toolchain
 sphinx_*/
+
+# kernel-platform retardedness
+Android.mk
+drivers/staging/greybus/tools/Android.mk
