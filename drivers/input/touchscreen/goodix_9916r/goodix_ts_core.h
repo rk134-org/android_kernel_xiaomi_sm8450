@@ -756,6 +756,7 @@ struct goodix_ts_core {
 	struct completion pm_resume_completion;
 /* N17 code for HQ-290598 by jiangyue at 2023/6/6 end */
 	int fod_status;
+	int nonui_status;
 	struct delayed_work panel_notifier_register_work;
 };
 
