@@ -292,13 +292,9 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	case GOODIX_GESTURE_SINGLE_TAP:
 		if (cd->gesture_type & GESTURE_SINGLE_TAP) {
 			ts_info("get SINGLE-TAP gesture");
-/* N17 code for HQ-290808 by jiangyue at 2023/6/19 start */
-			//input_report_key(cd->input_dev, KEY_WAKEUP, 1);
 			input_report_key(cd->input_dev, KEY_GOTO, 1);
 			input_sync(cd->input_dev);
-			//input_report_key(cd->input_dev, KEY_WAKEUP, 0);
 			input_report_key(cd->input_dev, KEY_GOTO, 0);
-/* N17 code for HQ-290808 by jiangyue at 2023/6/19 end */
 			input_sync(cd->input_dev);
 		} else {
 			ts_debug("not enable SINGLE-TAP");
@@ -307,7 +303,10 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	case GOODIX_GESTURE_DOUBLE_TAP:
 		if (cd->gesture_type & GESTURE_DOUBLE_TAP) {
 			ts_info("get DOUBLE-TAP gesture");
-			notify_gesture_double_tap();
+			input_report_key(cd->input_dev, KEY_WAKEUP, 1);
+			input_sync(cd->input_dev);
+			input_report_key(cd->input_dev, KEY_WAKEUP, 0);
+			input_sync(cd->input_dev);
 		} else {
 			ts_debug("not enable DOUBLE-TAP");
 		}

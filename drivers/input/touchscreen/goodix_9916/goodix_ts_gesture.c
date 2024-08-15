@@ -331,19 +331,24 @@ int goodix_gesture_ist(struct goodix_ts_core *cd)
 	} else if (event_type == 0xcc) {
 		if ((*(byte *)&cd->gesture_enabled >> 1 & 1) != 0) {
 			ts_info("GTP gesture report double tap");
-			notify_gesture_double_tap();
+			input_report_key(cd->input_dev, KEY_WAKEUP, 1);
+			input_sync(cd->input_dev);
+			input_report_key(cd->input_dev, KEY_WAKEUP, 0);
+			input_sync(cd->input_dev);
 			goto success_out;
 		}
 		ts_debug("not enable DOUBLE-TAP");
-		notify_gesture_double_tap();
 		goto success_out;
 	} else if (event_type == 0x4c) {
 		if ((*(byte *)&cd->gesture_enabled & 1) == 0) {
 			ts_debug("not enable SINGLE-TAP");
 		} else {
 			ts_info("GTP gesture report single tap");
+			input_report_key(cd->input_dev, KEY_GOTO, 1);
+			input_sync(cd->input_dev);
+			input_report_key(cd->input_dev, KEY_GOTO, 0);
+			input_sync(cd->input_dev);
 		}
-		notify_gesture_single_tap();
 		goto success_out;
 	} else if (event_type == 0x46) {
 		if ((*(byte *)&cd->gesture_enabled >> 2 & 1) == 0) {

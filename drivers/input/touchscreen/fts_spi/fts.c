@@ -4387,19 +4387,24 @@ static void fts_gesture_event_handler(struct fts_ts_info *info,
 				update_fod_press_status(1);
 			}
 			goto gesture_done;
-		} else if (event[2] == GEST_ID_SINGTAP) {
-			logError(1, "%s %s: single tap ! \n", tag, __func__);
-			notify_gesture_single_tap();
-			goto gesture_done;
 		}
 #endif
 		switch (event[2]) {
+		case GEST_ID_SINGTAP:
+			if (!info->gesture_enabled)
+				goto gesture_done;
+			value = KEY_GOTO;
+			logError(1, "%s %s: single tap ! \n", tag, __func__);
+			needCoords = 0;
+			break;
+
 		case GEST_ID_DBLTAP:
 			if (!info->gesture_enabled)
 				goto gesture_done;
+			value = KEY_WAKEUP;
 			logError(1, "%s %s: double tap ! \n", tag, __func__);
-			notify_gesture_double_tap();
-			goto gesture_done;
+			needCoords = 0;
+			break;
 
 		case GEST_ID_AT:
 			value = KEY_WWW;
