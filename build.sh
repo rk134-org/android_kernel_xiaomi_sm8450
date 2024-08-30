@@ -5,8 +5,8 @@
 
 SECONDS=0 # start builtin bash timer
 KP_ROOT="$(realpath ../..)"
-SRC_ROOT="$HOME/pa"
-TC_DIR="$KP_ROOT/prebuilts-master/clang/host/linux-x86/clang-r487747c"
+SRC_ROOT="$HOME/aospa"
+TC_DIR="$KP_ROOT/prebuilts-master/clang/host/linux-x86/clang-r536225"
 PREBUILTS_DIR="$KP_ROOT/prebuilts/kernel-build-tools/linux-x86"
 
 DO_CLEAN=false
@@ -35,7 +35,18 @@ if [ -z "$TARGET" ]; then
     exit 1
 fi
 
+if ! source .build.rc || [ -z "$SRC_ROOT" ]; then
+    echo -e "Create a .build.rc file here and define\nSRC_ROOT=<path/to/aospa/source>"
+    exit 1
+fi
+
 KERNEL_DIR="$SRC_ROOT/device/xiaomi/$TARGET-kernel"
+
+if [ ! -d "$KERNEL_DIR" ]; then
+    echo "$KERNEL_DIR does not exist!"
+    exit 1
+fi
+
 KERNEL_COPY_TO="$KERNEL_DIR"
 DTB_COPY_TO="$KERNEL_DIR/dtbs"
 DTBO_COPY_TO="$DTB_COPY_TO/dtbo.img"
@@ -52,8 +63,8 @@ VDLKM_DIR="$KERNEL_DIR/vendor_dlkm"
 DEFCONFIG="gki_defconfig"
 DEFCONFIGS="vendor/waipio_GKI.config \
 vendor/xiaomi_GKI.config \
-vendor/aospa.config"
-#vendor/debugfs.config"
+vendor/pixelos.config \
+vendor/debugfs.config"
 
 MODULES_SRC="../sm8450-modules/qcom/opensource"
 MODULES="mmrm-driver \
@@ -78,6 +89,10 @@ case "$TARGET" in
     "marble" )
         DTB_WILDCARD="ukee"
         DTBO_WILDCARD="marble-sm7475-pm8008-overlay"
+        ;;
+    "cupid" )
+        DTB_WILDCARD="waipio"
+        DTBO_WILDCARD="cupid-sm8450-pm8008-overlay"
         ;;
 esac
 
