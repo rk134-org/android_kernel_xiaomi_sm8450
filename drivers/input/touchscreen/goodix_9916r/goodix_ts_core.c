@@ -55,6 +55,8 @@ static int goodix_get_charging_status(void);
 struct drm_panel *active_panel;
 extern struct device_node *gf_spi_dp;
 
+extern void touch_irq_boost(void);
+
 static int goodix_ts_check_panel(void)
 {
 	int i;
@@ -1488,6 +1490,9 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
 	}
 #endif
 
+	touch_irq_boost();
+	cpu_latency_qos_add_request(&core_data->pm_qos_req_irq, 0);
+
 	/* inform external module */
 	mutex_lock(&goodix_modules.mutex);
 	list_for_each_entry_safe(ext_module, next,
@@ -1497,8 +1502,7 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
 		ret = ext_module->funcs->irq_event(core_data, ext_module);
 		if (ret == EVT_CANCEL_IRQEVT) {
 			mutex_unlock(&goodix_modules.mutex);
-			pm_relax(core_data->bus->dev);
-			return IRQ_HANDLED;
+			goto exit;
 		}
 	}
 	mutex_unlock(&goodix_modules.mutex);
@@ -1521,6 +1525,9 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
 	}
 
 	hw_ops->after_event_handler(core_data);
+
+exit:
+	cpu_latency_qos_remove_request(&core_data->pm_qos_req_irq);
 	pm_relax(core_data->bus->dev);
 	return IRQ_HANDLED;
 }

@@ -759,6 +759,7 @@ struct goodix_ts_core {
 	int fod_status;
 	int nonui_status;
 	struct delayed_work panel_notifier_register_work;
+	struct pm_qos_request pm_qos_req_irq;
 };
 
 /* external module structures */
