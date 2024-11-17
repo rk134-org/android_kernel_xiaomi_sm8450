@@ -6,7 +6,7 @@
 SECONDS=0 # start builtin bash timer
 KP_ROOT="$(realpath ../..)"
 SRC_ROOT="$HOME/pa"
-TC_DIR="$KP_ROOT/prebuilts-master/clang/host/linux-x86/clang-r416183b"
+TC_DIR="$KP_ROOT/prebuilts-master/clang/host/linux-x86/clang-r510928"
 PREBUILTS_DIR="$KP_ROOT/prebuilts/kernel-build-tools/linux-x86"
 
 DO_CLEAN=false
