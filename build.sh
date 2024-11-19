@@ -118,12 +118,12 @@ mkdir -p out
 m $DEFCONFIG
 m ./scripts/kconfig/merge_config.sh $DEFCONFIGS vendor/${TARGET}_GKI.config
 scripts/config --file out/.config \
-    --set-str LOCALVERSION "-aospa-gki" \
+    --set-str LOCALVERSION "-aospa" \
     -m CONFIG_KSU
 $NO_LTO && (
     scripts/config --file out/.config \
         -d LTO_CLANG_FULL -e LTO_NONE \
-        --set-str LOCALVERSION "-aospa-gki-nolto"
+        --set-str LOCALVERSION "-aospa-nolto"
     echo -e "\nDisabled LTO!"
 )
 
