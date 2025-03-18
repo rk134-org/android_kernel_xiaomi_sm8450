@@ -449,11 +449,7 @@ static void mtdoops_do_dump(struct kmsg_dumper *dumper,
 		printk(KERN_ERR "mtdoops: read pmsg failed sig = 0x%x \n", p_hdr->sig);
 
 	/* Panics must be written immediately */
-<<<<<<< HEAD
-	if (reason == MTD_DUMP_OOPS || reason == MTD_DUMP_PANIC) {
-=======
 	if (reason == (enum mtd_dump_reason)KMSG_DUMP_OOPS || reason == (enum mtd_dump_reason)KMSG_DUMP_PANIC) {
->>>>>>> 348a4c887b08 (treewide: Fix all clang 19 warnings)
 		mtdoops_write(cxt, 1);
 	} else {
 		/* For other cases, schedule work to write it "nicely" */
